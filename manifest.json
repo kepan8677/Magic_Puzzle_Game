@@ -1,0 +1,18 @@
+{
+  "name": "Puzzle Party",
+  "short_name": "Puzzle Party",
+  "description": "Turn any picture into a puzzle and race the clock.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f1226",
+  "theme_color": "#7c5cff",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
