@@ -83,20 +83,52 @@ renderHistory();
 const dropEl = $('drop');
 const fileInput = $('file');
 
-function handleFile(f) {
+// Center-crop an image file into a square (returns a Blob URL of a square JPEG).
+// Max output side is capped at 1600 to keep memory/perf reasonable.
+function cropToSquareURL(file) {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => {
+      const side = Math.min(im.naturalWidth, im.naturalHeight);
+      const sx = Math.floor((im.naturalWidth - side) / 2);
+      const sy = Math.floor((im.naturalHeight - side) / 2);
+      const out = Math.min(side, 1600); // cap output size
+      const c = document.createElement('canvas');
+      c.width = c.height = out;
+      const ctx = c.getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(im, sx, sy, side, side, 0, 0, out, out);
+      c.toBlob(b => b ? resolve(URL.createObjectURL(b)) : reject(new Error('toBlob failed')),
+        'image/jpeg', 0.92);
+    };
+    im.onerror = () => reject(new Error('Image load failed'));
+    im.src = URL.createObjectURL(file);
+  });
+}
+
+async function handleFile(f) {
   if (!f) return;
   if (!f.type.startsWith('image/')) {
     showToast('Please choose an image file');
     return;
   }
+  $('startBtn').disabled = true;
+  let croppedURL;
+  try {
+    croppedURL = await cropToSquareURL(f);
+  } catch (e) {
+    console.error(e);
+    showToast('Could not process image — try another');
+    return;
+  }
   if (state.imgURL) URL.revokeObjectURL(state.imgURL);
-  state.imgURL = URL.createObjectURL(f);
+  state.imgURL = croppedURL;
   state.imgFile = f;
   dropEl.textContent = '';
   const im = document.createElement('img');
   im.className = 'thumb'; im.src = state.imgURL; im.alt = '';
   const span = document.createElement('span');
-  span.innerHTML = `<b>${f.name.length > 24 ? f.name.slice(0,22)+'…' : f.name}</b><br><span style="font-size:12px;color:var(--muted)">Click to change</span>`;
+  span.innerHTML = `<b>${f.name.length > 24 ? f.name.slice(0,22)+'…' : f.name}</b><br><span style="font-size:12px;color:var(--muted)">Auto-cropped to square · click to change</span>`;
   dropEl.append(im, span, fileInput);
   $('startBtn').disabled = false;
   // Update side-preview
