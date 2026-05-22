@@ -174,14 +174,7 @@ async function useLibraryImage(rec) {
   state.imgURL = URL.createObjectURL(rec.blob);
   state.imgFile = null;
   currentLibId = rec.id;
-  // Update drop zone
-  dropEl.textContent = '';
-  const im = document.createElement('img');
-  im.className = 'thumb'; im.src = rec.thumb; im.alt = '';
-  const span = document.createElement('span');
-  const shortName = rec.name.length > 24 ? rec.name.slice(0,22)+'…' : rec.name;
-  span.innerHTML = `<b>${shortName}</b><br><span style="font-size:12px;color:var(--muted)">From library · click to change</span>`;
-  dropEl.append(im, span, fileInput);
+  showSelectedFile(rec.name, rec.thumb, '📚 From library · click to change');
   // Preview
   $('previewImg').src = state.imgURL;
   $('previewImg').style.display = 'block';
@@ -255,12 +248,7 @@ async function handleFile(f) {
   if (state.imgURL) URL.revokeObjectURL(state.imgURL);
   state.imgURL = URL.createObjectURL(cropped.blob);
   state.imgFile = f;
-  dropEl.textContent = '';
-  const im = document.createElement('img');
-  im.className = 'thumb'; im.src = state.imgURL; im.alt = '';
-  const span = document.createElement('span');
-  span.innerHTML = `<b>${f.name.length > 24 ? f.name.slice(0,22)+'…' : f.name}</b><br><span style="font-size:12px;color:var(--muted)">Auto-cropped & saved · click to change</span>`;
-  dropEl.append(im, span, fileInput);
+  showSelectedFile(f.name, state.imgURL, '✓ Cropped & saved · click to change');
   $('startBtn').disabled = false;
   // Update side-preview
   $('previewImg').src = state.imgURL;
@@ -279,9 +267,25 @@ async function handleFile(f) {
   } catch(e) { console.error('Library save failed', e); }
 }
 
+// Helper: update the upload-info panel to show what's selected
+function showSelectedFile(name, thumbURL, hint) {
+  dropEl.classList.remove('upload-info-empty');
+  dropEl.innerHTML = '';
+  if (thumbURL) {
+    const im = document.createElement('img');
+    im.className = 'thumb'; im.src = thumbURL; im.alt = '';
+    dropEl.appendChild(im);
+  }
+  const span = document.createElement('span');
+  const shortName = name.length > 22 ? name.slice(0,20)+'…' : name;
+  span.innerHTML = `<b>${shortName}</b><br><span style="font-size:11px;color:var(--muted)">${hint}</span>`;
+  dropEl.appendChild(span);
+}
+
 dropEl.addEventListener('click', e => {
   if (e.target !== fileInput) fileInput.click();
 });
+$('uploadBtn').addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
 
 ['dragenter','dragover'].forEach(ev =>
