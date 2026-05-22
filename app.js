@@ -79,26 +79,42 @@ $('clearBtn').onclick = () => {
 };
 renderHistory();
 
-// ============= THEME TOGGLE (Normal vs Focus Mode) =============
-const THEME_KEY = 'puzzle_theme_v1';
-function applyTheme(mode) {
-  if (mode === 'focus') {
-    document.body.classList.add('focus-mode');
-    $('themeBtn').textContent = '☀️';
-    $('themeBtn').title = 'Switch to Normal mode';
-  } else {
-    document.body.classList.remove('focus-mode');
-    $('themeBtn').textContent = '🌙';
-    $('themeBtn').title = 'Switch to Focus mode (dim everything except the board)';
-  }
+// ============= SETTINGS (Focus Mode + Maximize on Start) =============
+const SETTINGS_KEY = 'puzzle_settings_v1';
+const defaultSettings = { focus: false, maximize: true };
+function loadSettings() {
+  try { return { ...defaultSettings, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; }
+  catch(e) { return { ...defaultSettings }; }
 }
-applyTheme(localStorage.getItem(THEME_KEY) || 'normal');
-$('themeBtn').onclick = () => {
-  const next = document.body.classList.contains('focus-mode') ? 'normal' : 'focus';
-  localStorage.setItem(THEME_KEY, next);
-  applyTheme(next);
-  showToast(next === 'focus' ? '🌙 Focus mode' : '☀️ Normal mode');
+function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+const settings = loadSettings();
+
+function applyFocus() {
+  document.body.classList.toggle('focus-mode', !!settings.focus);
+}
+applyFocus();
+
+// Settings modal wiring
+$('settingsBtn').onclick = () => {
+  $('setFocus').checked = !!settings.focus;
+  $('setMaximize').checked = !!settings.maximize;
+  $('settingsModal').classList.add('show');
 };
+$('closeSettingsBtn').onclick = () => $('settingsModal').classList.remove('show');
+$('settingsModal').addEventListener('click', e => {
+  if (e.target === $('settingsModal')) $('settingsModal').classList.remove('show');
+});
+$('setFocus').addEventListener('change', e => {
+  settings.focus = e.target.checked;
+  saveSettings(settings);
+  applyFocus();
+  showToast(settings.focus ? '🌙 Focus mode on' : '☀️ Focus mode off');
+});
+$('setMaximize').addEventListener('change', e => {
+  settings.maximize = e.target.checked;
+  saveSettings(settings);
+  showToast(settings.maximize ? '🔍 Will maximize on start' : '📐 Normal layout on start');
+});
 
 // ============= IMAGE LIBRARY (IndexedDB) =============
 const DB_NAME = 'puzzle-party-db';
@@ -407,10 +423,11 @@ function buildPuzzle() {
   }
   startTimer();
   updateProgress();
-  // Maximize board + fade everything else
-  document.body.classList.add('playing');
-  // Smoothly scroll the board into view
-  setTimeout(() => board.scrollIntoView({behavior:'smooth', block:'center'}), 100);
+  // Maximize board + fade everything else (only if user enabled this in Settings)
+  if (settings.maximize) {
+    document.body.classList.add('playing');
+    setTimeout(() => board.scrollIntoView({behavior:'smooth', block:'center'}), 100);
+  }
 }
 
 // ============= DRAG (Pointer Events) =============
