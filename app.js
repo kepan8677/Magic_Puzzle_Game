@@ -404,7 +404,7 @@ $('copyBtn').onclick = async () => {
 $('sysShareBtn').onclick = async () => {
   const url = getShareURL();
   if (navigator.share) {
-    try { await navigator.share({title:'🧩 Puzzle Party', text:"Let's play puzzles!", url}); }
+    try { await navigator.share({title:'🧩 XX Puzzle Party', text:"Let's play puzzles!", url}); }
     catch(_) {}
   } else {
     showToast('System share not supported here — use Copy');
@@ -419,7 +419,7 @@ $('smsBtn').onclick = () => {
 };
 $('mailBtn').onclick = () => {
   const url = getShareURL();
-  location.href = `mailto:?subject=${encodeURIComponent('🧩 Puzzle Party')}&body=${encodeURIComponent("Let's play puzzles!\n\n" + url)}`;
+  location.href = `mailto:?subject=${encodeURIComponent('🧩 XX Puzzle Party')}&body=${encodeURIComponent("Let's play puzzles!\n\n" + url)}`;
 };
 
 window.addEventListener('error', e => {

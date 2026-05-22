@@ -1,4 +1,4 @@
-# 🧩 Puzzle Party
+# 🧩 XX Puzzle Party
 
 A simple, fast, single-page puzzle game you can run anywhere — no install, no backend, no dependencies.
 

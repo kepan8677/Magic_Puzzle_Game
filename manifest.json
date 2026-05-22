@@ -1,6 +1,6 @@
 {
-  "name": "Puzzle Party",
-  "short_name": "Puzzle Party",
+  "name": "XX Puzzle Party",
+  "short_name": "XX Puzzle Party",
   "description": "Turn any picture into a puzzle and race the clock.",
   "start_url": "./",
   "display": "standalone",
