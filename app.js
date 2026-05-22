@@ -283,6 +283,10 @@ function buildPuzzle() {
   }
   startTimer();
   updateProgress();
+  // Maximize board + fade everything else
+  document.body.classList.add('playing');
+  // Smoothly scroll the board into view
+  setTimeout(() => board.scrollIntoView({behavior:'smooth', block:'center'}), 100);
 }
 
 // ============= DRAG (Pointer Events) =============
@@ -370,6 +374,7 @@ function checkWin() {
   state.pieces.forEach(p => p.classList.add('locked'));
   const elapsed = stopTimer();
   const score = computeScore(elapsed);
+  document.body.classList.remove('playing'); // restore normal layout on win
   finishGame(elapsed, score);
 }
 

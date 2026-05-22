@@ -89,6 +89,28 @@
   body.focus-mode .panel.focus-keep{opacity:1;filter:none;
     box-shadow:0 0 0 2px var(--accent),0 8px 32px rgba(124,92,255,.25)}
 
+  /* === Playing Mode: maximize the board, fade everything else === */
+  body.playing{background:#000;transition:background .4s}
+  body.playing main{max-width:none;padding:10px;transition:max-width .4s,padding .4s}
+  body.playing header{opacity:.25;transition:opacity .25s}
+  body.playing header:hover{opacity:1}
+  body.playing .panel:not(.focus-keep){
+    opacity:.12;max-height:54px;overflow:hidden;
+    transition:opacity .25s,max-height .25s,padding .25s,filter .25s;
+    filter:saturate(.4) blur(.5px);padding:8px 14px}
+  body.playing .panel:not(.focus-keep):hover{opacity:.95;max-height:600px;filter:none;
+    padding:14px}
+  body.playing .panel.focus-keep{
+    box-shadow:0 0 0 2px var(--accent),0 12px 48px rgba(124,92,255,.35);
+    transition:box-shadow .4s}
+  body.playing #board{
+    max-width:min(92vh - 220px, 100%); /* leave room for preview above + headers */
+  }
+  body.playing .preview-side{width:200px}
+  @media(max-height:700px){
+    body.playing .preview-side{width:140px}
+  }
+
   /* Board with preview centered above */
   .board-wrap{display:flex;flex-direction:column;gap:14px;align-items:center}
   .preview-side{display:flex;flex-direction:column;gap:6px;width:180px;max-width:40%}
@@ -230,6 +252,6 @@
   </div>
 </div>
 
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>
