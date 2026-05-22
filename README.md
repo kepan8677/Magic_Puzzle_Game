@@ -2,9 +2,9 @@
 
 A simple, fast, single-page puzzle game you can run anywhere — no install, no backend, no dependencies.
 
-**[▶ Play it live](#)** _(replace with your GitHub Pages URL after deploying)_
+### ▶️ **[Play it now → kepan8677.github.io/Magic_Puzzle_Game](https://kepan8677.github.io/Magic_Puzzle_Game/)**
 
-![Puzzle Party screenshot](screenshot.png)
+Click the link above to play instantly in your browser — works on Mac, Windows, iPhone, and Android.
 
 ---
 
