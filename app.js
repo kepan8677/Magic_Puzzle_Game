@@ -370,9 +370,10 @@ function checkWin() {
   const correct = updateProgress();
   const N = state.pieces.length;
   if (correct !== N) return;
+  // Compute elapsed BEFORE flipping running flag (currentElapsed() depends on it)
+  const elapsed = stopTimer();
   state.running = false;
   state.pieces.forEach(p => p.classList.add('locked'));
-  const elapsed = stopTimer();
   const score = computeScore(elapsed);
   document.body.classList.remove('playing'); // restore normal layout on win
   finishGame(elapsed, score);
