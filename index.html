@@ -250,10 +250,71 @@
     border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;
     color:var(--muted);font-size:11px;text-align:center;padding:8px;line-height:1.4}
   #board{width:100%}
-  @media(max-width:520px){
-    .field{min-width:70px} h1{font-size:16px}
-    .timer{font-size:20px}
-    .preview-side{width:140px}
+
+  /* ============= MOBILE / iPhone Layout ============= */
+  @media(max-width:680px){
+    main{padding:12px}
+    h1{font-size:17px}
+    header{padding:10px 14px}
+
+    /* Reorganize the controls into a clean grid:
+       Row 1: Upload (full width)
+       Row 2: Pieces | Difficulty
+       Row 3: Start (full width)
+       Row 4: Timer | Pause */
+    .panel{padding:14px;border-radius:14px}
+    .panel .row{display:grid;
+      grid-template-columns:1fr 1fr;
+      grid-template-areas:
+        "upload upload"
+        "pieces diff"
+        "start start"
+        "timer pause";
+      gap:12px;align-items:stretch}
+    .field-upload{grid-area:upload;min-width:0;flex:none}
+    .field-pieces{grid-area:pieces;min-width:0}
+    .field-diff{grid-area:diff;min-width:0}
+    .field-start{grid-area:start;min-width:0;margin:0}
+    .field-timer{grid-area:timer;min-width:0;align-items:flex-start !important;margin:0 !important}
+    .field-pause{grid-area:pause;min-width:0;align-items:flex-end}
+
+    /* Make all fields full-width inside grid cells */
+    .field{width:100%}
+    .field select,.field input{width:100%}
+    .field-start button,.field-pause button{width:100%}
+    .upload-btn{width:100%;min-width:0;padding:18px 20px;font-size:17px}
+    .upload-info{max-width:none}
+
+    /* Bigger touch targets */
+    button{min-height:44px}
+    select{min-height:44px;padding:10px 12px}
+
+    /* Timer can shrink */
+    .timer{font-size:18px}
+    .field-timer .timer{white-space:nowrap}
+
+    /* Library + history a bit tighter */
+    .library{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;
+      max-height:200px}
+
+    /* Preview smaller on mobile */
+    .preview-side{width:120px;max-width:36%}
+
+    /* Header buttons: keep visible but smaller */
+    header button{padding:6px 10px;font-size:12px}
+
+    /* Modal: more room */
+    .modal{padding:12px}
+    .modal-box{padding:18px}
+    .share-grid{grid-template-columns:1fr}
+  }
+
+  /* Very small screens (iPhone SE, etc.) */
+  @media(max-width:380px){
+    .upload-btn span:last-child{font-size:15px}
+    h1{font-size:15px}
+    .total{display:none}
+    .panel-title{font-size:14px}
   }
 </style>
 </head>
@@ -272,7 +333,7 @@
   <!-- Controls -->
   <div class="panel">
     <div class="row">
-      <div class="field upload-wrap" style="flex:1">
+      <div class="field upload-wrap field-upload" style="flex:1">
         <label style="text-align:center">1. Picture</label>
         <button id="uploadBtn" class="btn-success upload-btn">
           <span style="font-size:22px">📷</span>
@@ -281,11 +342,11 @@
         <input type="file" id="file" accept="image/*" style="display:none">
         <div id="drop" class="upload-info" style="display:none"></div>
       </div>
-      <div class="field">
+      <div class="field field-pieces">
         <label>2. Pieces</label>
         <select id="grid"></select>
       </div>
-      <div class="field">
+      <div class="field field-diff">
         <label>3. Difficulty</label>
         <select id="diff">
           <option value="1">1 - Easy</option>
@@ -295,15 +356,15 @@
           <option value="5">5 - Hard</option>
         </select>
       </div>
-      <div class="field">
+      <div class="field field-start">
         <label>&nbsp;</label>
         <button id="startBtn" class="btn-warn btn-lg" disabled>▶ Start Game</button>
       </div>
-      <div class="field" style="margin-left:auto;align-items:flex-end">
+      <div class="field field-timer" style="margin-left:auto;align-items:flex-end">
         <label>Time · Solved</label>
         <span class="timer" id="timer">00:00 · <span id="progress" style="color:var(--ok);font-size:18px">0/0</span></span>
       </div>
-      <div class="field">
+      <div class="field field-pause">
         <label>&nbsp;</label>
         <button id="pauseBtn" class="btn-ghost" disabled>⏸ Pause</button>
       </div>
