@@ -100,30 +100,140 @@ $('themeBtn').onclick = () => {
   showToast(next === 'focus' ? '🌙 Focus mode' : '☀️ Normal mode');
 };
 
+// ============= IMAGE LIBRARY (IndexedDB) =============
+const DB_NAME = 'puzzle-party-db';
+const STORE = 'images';
+let dbPromise = null;
+function openDB() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        db.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return dbPromise;
+}
+async function dbCall(mode, fn) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, mode);
+    const store = tx.objectStore(STORE);
+    let result;
+    fn(store, v => result = v, reject);
+    tx.oncomplete = () => resolve(result);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+const lib = {
+  add: rec => dbCall('readwrite', (s, ok) => { const r = s.add(rec); r.onsuccess = () => ok(r.result); }),
+  list: () => dbCall('readonly', (s, ok) => { const r = s.getAll(); r.onsuccess = () => ok(r.result); }),
+  get: id => dbCall('readonly', (s, ok) => { const r = s.get(id); r.onsuccess = () => ok(r.result); }),
+  del: id => dbCall('readwrite', s => s.delete(id)),
+  clear: () => dbCall('readwrite', s => s.clear()),
+};
+
+let currentLibId = null; // which library item is currently selected (highlighted)
+async function renderLibrary() {
+  let items;
+  try { items = await lib.list(); }
+  catch(e) { console.error('Library list failed', e); return; }
+  items.sort((a,b) => b.addedAt - a.addedAt); // newest first
+  const wrap = $('library');
+  $('libCount').textContent = items.length ? `· ${items.length} saved` : '';
+  if (!items.length) {
+    wrap.innerHTML = '<div class="lib-empty">No saved images yet — upload one above and it\'ll be saved here for next time.</div>';
+    return;
+  }
+  wrap.innerHTML = '';
+  items.forEach(rec => {
+    const div = document.createElement('div');
+    div.className = 'lib-item' + (rec.id === currentLibId ? ' active' : '');
+    div.title = rec.name + ' · ' + new Date(rec.addedAt).toLocaleString();
+    div.innerHTML = `<img src="${rec.thumb}" alt=""><button class="lib-del" title="Delete">✕</button>`;
+    div.onclick = e => {
+      if (e.target.classList.contains('lib-del')) {
+        e.stopPropagation();
+        if (confirm('Delete this image?')) {
+          lib.del(rec.id).then(renderLibrary);
+        }
+        return;
+      }
+      useLibraryImage(rec);
+    };
+    wrap.appendChild(div);
+  });
+}
+async function useLibraryImage(rec) {
+  if (state.imgURL) URL.revokeObjectURL(state.imgURL);
+  state.imgURL = URL.createObjectURL(rec.blob);
+  state.imgFile = null;
+  currentLibId = rec.id;
+  // Update drop zone
+  dropEl.textContent = '';
+  const im = document.createElement('img');
+  im.className = 'thumb'; im.src = rec.thumb; im.alt = '';
+  const span = document.createElement('span');
+  const shortName = rec.name.length > 24 ? rec.name.slice(0,22)+'…' : rec.name;
+  span.innerHTML = `<b>${shortName}</b><br><span style="font-size:12px;color:var(--muted)">From library · click to change</span>`;
+  dropEl.append(im, span, fileInput);
+  // Preview
+  $('previewImg').src = state.imgURL;
+  $('previewImg').style.display = 'block';
+  $('previewEmpty').style.display = 'none';
+  $('startBtn').disabled = false;
+  renderLibrary(); // re-render to show "active" highlight
+  showToast('✅ Loaded from library');
+}
+$('clearLibBtn').onclick = async () => {
+  const items = await lib.list();
+  if (!items.length) return;
+  if (confirm(`Delete all ${items.length} saved images?`)) {
+    await lib.clear();
+    currentLibId = null;
+    renderLibrary();
+    showToast('Library cleared');
+  }
+};
+renderLibrary();
+
 // ============= FILE UPLOAD =============
 const dropEl = $('drop');
 const fileInput = $('file');
 
-// Center-crop an image file into a square (returns a Blob URL of a square JPEG).
-// Max output side is capped at 1600 to keep memory/perf reasonable.
-function cropToSquareURL(file) {
+// Center-crop an image file into a square. Returns { blob, thumbDataURL }.
+function cropToSquare(file) {
   return new Promise((resolve, reject) => {
+    const objURL = URL.createObjectURL(file);
     const im = new Image();
     im.onload = () => {
       const side = Math.min(im.naturalWidth, im.naturalHeight);
       const sx = Math.floor((im.naturalWidth - side) / 2);
       const sy = Math.floor((im.naturalHeight - side) / 2);
-      const out = Math.min(side, 1600); // cap output size
+      const out = Math.min(side, 1600);
       const c = document.createElement('canvas');
       c.width = c.height = out;
       const ctx = c.getContext('2d');
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(im, sx, sy, side, side, 0, 0, out, out);
-      c.toBlob(b => b ? resolve(URL.createObjectURL(b)) : reject(new Error('toBlob failed')),
-        'image/jpeg', 0.92);
+      // Thumbnail (120x120)
+      const tc = document.createElement('canvas');
+      tc.width = tc.height = 120;
+      tc.getContext('2d').drawImage(c, 0, 0, 120, 120);
+      const thumbDataURL = tc.toDataURL('image/jpeg', 0.7);
+      c.toBlob(b => {
+        URL.revokeObjectURL(objURL);
+        if (!b) return reject(new Error('toBlob failed'));
+        resolve({ blob: b, thumbDataURL });
+      }, 'image/jpeg', 0.92);
     };
-    im.onerror = () => reject(new Error('Image load failed'));
-    im.src = URL.createObjectURL(file);
+    im.onerror = () => { URL.revokeObjectURL(objURL); reject(new Error('Image load failed')); };
+    im.src = objURL;
   });
 }
 
@@ -134,29 +244,39 @@ async function handleFile(f) {
     return;
   }
   $('startBtn').disabled = true;
-  let croppedURL;
+  let cropped;
   try {
-    croppedURL = await cropToSquareURL(f);
+    cropped = await cropToSquare(f);
   } catch (e) {
     console.error(e);
     showToast('Could not process image — try another');
     return;
   }
   if (state.imgURL) URL.revokeObjectURL(state.imgURL);
-  state.imgURL = croppedURL;
+  state.imgURL = URL.createObjectURL(cropped.blob);
   state.imgFile = f;
   dropEl.textContent = '';
   const im = document.createElement('img');
   im.className = 'thumb'; im.src = state.imgURL; im.alt = '';
   const span = document.createElement('span');
-  span.innerHTML = `<b>${f.name.length > 24 ? f.name.slice(0,22)+'…' : f.name}</b><br><span style="font-size:12px;color:var(--muted)">Auto-cropped to square · click to change</span>`;
+  span.innerHTML = `<b>${f.name.length > 24 ? f.name.slice(0,22)+'…' : f.name}</b><br><span style="font-size:12px;color:var(--muted)">Auto-cropped & saved · click to change</span>`;
   dropEl.append(im, span, fileInput);
   $('startBtn').disabled = false;
   // Update side-preview
-  const pImg = $('previewImg'), pEmpty = $('previewEmpty');
-  pImg.src = state.imgURL;
-  pImg.style.display = 'block';
-  pEmpty.style.display = 'none';
+  $('previewImg').src = state.imgURL;
+  $('previewImg').style.display = 'block';
+  $('previewEmpty').style.display = 'none';
+  // Save to library
+  try {
+    const newId = await lib.add({
+      name: f.name,
+      blob: cropped.blob,
+      thumb: cropped.thumbDataURL,
+      addedAt: Date.now(),
+    });
+    currentLibId = newId;
+    renderLibrary();
+  } catch(e) { console.error('Library save failed', e); }
 }
 
 dropEl.addEventListener('click', e => {
