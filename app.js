@@ -330,6 +330,7 @@ async function handleFile(f) {
 
 // Helper: update the upload-info panel to show what's selected
 function showSelectedFile(name, thumbURL, hint) {
+  dropEl.style.display = 'flex';
   dropEl.classList.remove('upload-info-empty');
   dropEl.innerHTML = '';
   if (thumbURL) {
