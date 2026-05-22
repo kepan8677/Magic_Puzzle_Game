@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+._*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
+
+# Node (in case you add tooling later)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Build / deploy artifacts
+dist/
+build/
+.next/
+.cache/
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log

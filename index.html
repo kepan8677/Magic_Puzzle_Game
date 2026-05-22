@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Puzzle Party 🧩</title>
+<style>
+  :root {
+    --bg:#0f1226; --card:#1a1f3d; --accent:#7c5cff; --ok:#22c55e;
+    --text:#eef0ff; --muted:#9aa3c7; --border:#333a66;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-tap-highlight-color:transparent}
+  header{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;
+    background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+  h1{margin:0;font-size:18px}
+  main{padding:16px;max-width:880px;margin:auto}
+  .panel{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px;
+    border:1px solid var(--border)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .field{display:flex;flex-direction:column;gap:4px;min-width:90px}
+  label{font-size:12px;color:var(--muted)}
+  input,select,button,textarea{font:inherit;color:var(--text);background:#252a4d;
+    border:1px solid var(--border);border-radius:8px;padding:8px 12px;outline:none}
+  input:focus,select:focus{border-color:var(--accent)}
+  button{background:var(--accent);border:none;cursor:pointer;font-weight:600;
+    transition:filter .12s,transform .05s}
+  button:hover:not(:disabled){filter:brightness(1.12)}
+  button:active:not(:disabled){transform:scale(.97)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .btn-ghost{background:#252a4d;border:1px solid var(--border)}
+  .drop{border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;
+    cursor:pointer;color:var(--muted);min-width:240px;transition:all .15s}
+  .drop:hover,.drop.over{border-color:var(--accent);color:var(--text);background:#252a4d}
+  .drop b{color:var(--accent)}
+  .thumb{width:40px;height:40px;border-radius:6px;object-fit:cover;
+    vertical-align:middle;margin-right:8px}
+  .timer{font:24px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent)}
+  .total b{color:var(--accent);font-size:18px;margin-left:4px}
+  #board{position:relative;width:100%;aspect-ratio:1;background:#000;border-radius:12px;
+    overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+  .piece{position:absolute;background-repeat:no-repeat;cursor:grab;
+    transition:box-shadow .12s,transform .12s}
+  .piece:not(.dragging){transition:left .15s,top .15s,box-shadow .12s}
+  .piece.locked{cursor:default;box-shadow:inset 0 0 0 2px rgba(34,197,94,.3)}
+  .piece.dragging{cursor:grabbing;z-index:100;
+    box-shadow:0 8px 24px rgba(0,0,0,.6);transition:none}
+  .history{max-height:280px;overflow:auto}
+  .game-row{display:flex;align-items:center;gap:10px;padding:8px 4px;
+    border-bottom:1px solid #2a2f55;font-size:13px}
+  .game-row:last-child{border-bottom:none}
+  .game-row img{width:42px;height:42px;border-radius:6px;object-fit:cover}
+  .game-row .meta{flex:1;min-width:0}
+  .game-row .meta div:first-child b{color:var(--ok)}
+  .game-row .meta div:last-child{color:var(--muted);font-size:12px}
+  .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-100px);
+    background:var(--accent);padding:10px 20px;border-radius:8px;font-weight:600;
+    z-index:1000;transition:transform .3s;pointer-events:none}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;
+    display:none;align-items:center;justify-content:center;padding:16px}
+  .modal.show{display:flex}
+  .modal-box{background:var(--card);border-radius:12px;padding:22px;
+    max-width:440px;width:100%;border:1px solid var(--border)}
+  .modal-box h3{margin:0 0 8px}
+  .modal-box p{color:var(--muted);font-size:13px;margin:0 0 14px}
+  .link-row{display:flex;gap:8px;margin-bottom:14px}
+  .link-row input{flex:1;font-size:13px}
+  .share-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .empty{color:var(--muted);text-align:center;padding:14px;font-size:13px}
+  @media(max-width:520px){
+    .field{min-width:70px} h1{font-size:16px}
+    .timer{font-size:20px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧩 Puzzle Party</h1>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button id="shareBtn" class="btn-ghost" style="padding:6px 12px;font-size:13px">📤 Share</button>
+    <span class="total" style="font-size:13px;color:var(--muted)">Total<b id="totalScore">0</b></span>
+  </div>
+</header>
+
+<main>
+  <!-- Controls -->
+  <div class="panel">
+    <div class="row">
+      <div class="field" style="flex:1;min-width:240px">
+        <label>1. Choose a picture</label>
+        <div class="drop" id="drop">📷 <b>Tap / click to choose</b> or drop an image here
+          <input type="file" id="file" accept="image/*" style="display:none">
+        </div>
+      </div>
+      <div class="field">
+        <label>2. Pieces / side</label>
+        <select id="grid"></select>
+      </div>
+      <div class="field">
+        <label>3. Difficulty</label>
+        <select id="diff">
+          <option value="1">1 - Easy</option>
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5 - Hard</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="startBtn" disabled>▶ Start</button>
+      </div>
+      <div class="field" style="margin-left:auto;align-items:flex-end">
+        <label>Time · Solved</label>
+        <span class="timer" id="timer">00:00 · <span id="progress" style="color:var(--ok);font-size:18px">0/0</span></span>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="pauseBtn" class="btn-ghost" disabled>⏸ Pause</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div class="panel"><div id="board"></div></div>
+
+  <!-- History -->
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="margin:0;font-size:15px">📜 History</h3>
+      <button id="clearBtn" class="btn-ghost" style="padding:4px 10px;font-size:12px">Clear</button>
+    </div>
+    <div class="history" id="history"></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- Win celebration modal -->
+<div class="modal" id="winModal">
+  <div class="modal-box" style="text-align:center;max-width:340px">
+    <div style="font-size:64px;line-height:1;margin-bottom:8px">🎉</div>
+    <h3 style="font-size:22px;margin:0 0 4px">Puzzle Solved!</h3>
+    <p id="winInfo" style="margin:0 0 14px"></p>
+    <div style="display:flex;justify-content:space-around;margin:14px 0;padding:14px;background:#252a4d;border-radius:10px">
+      <div>
+        <div style="font-size:12px;color:var(--muted)">Time</div>
+        <div style="font-size:24px;font-weight:600;color:var(--accent)" id="winTime">00:00</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--muted)">Score</div>
+        <div style="font-size:24px;font-weight:600;color:var(--ok)"><span id="winScore">0</span><span style="font-size:14px;color:var(--muted)"> /100</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button id="winCloseBtn" class="btn-ghost" style="flex:1">Close</button>
+      <button id="winAgainBtn" style="flex:1">▶ Play Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share modal -->
+<div class="modal" id="shareModal">
+  <div class="modal-box">
+    <h3>📤 Share with friends</h3>
+    <p id="shareHint">Copy this link and send it via Message, WeChat, or any chat app:</p>
+    <div class="link-row">
+      <input id="shareLink" readonly />
+      <button id="copyBtn">Copy</button>
+    </div>
+    <div class="share-grid">
+      <button id="sysShareBtn">📱 System Share</button>
+      <button id="wechatBtn" style="background:#07c160">💬 WeChat Tip</button>
+      <button id="smsBtn" class="btn-ghost">💌 Message / SMS</button>
+      <button id="mailBtn" class="btn-ghost">✉️ Email</button>
+    </div>
+    <div id="wechatHelp" style="display:none;background:#252a4d;padding:12px;border-radius:8px;
+      font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+      <b style="color:#07c160">WeChat sharing:</b><br>
+      1. Tap <b>Copy</b> above<br>
+      2. Open WeChat → choose a chat<br>
+      3. Long-press the input box → <b>Paste</b><br>
+      4. Send — friends tap the link to play
+    </div>
+    <button id="closeShareBtn" class="btn-ghost" style="width:100%">Close</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
