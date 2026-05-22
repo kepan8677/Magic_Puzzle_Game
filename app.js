@@ -99,6 +99,11 @@ function handleFile(f) {
   span.innerHTML = `<b>${f.name.length > 24 ? f.name.slice(0,22)+'…' : f.name}</b><br><span style="font-size:12px;color:var(--muted)">Click to change</span>`;
   dropEl.append(im, span, fileInput);
   $('startBtn').disabled = false;
+  // Update side-preview
+  const pImg = $('previewImg'), pEmpty = $('previewEmpty');
+  pImg.src = state.imgURL;
+  pImg.style.display = 'block';
+  pEmpty.style.display = 'none';
 }
 
 dropEl.addEventListener('click', e => {
