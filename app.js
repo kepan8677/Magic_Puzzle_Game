@@ -116,6 +116,51 @@ $('setMaximize').addEventListener('change', e => {
   showToast(settings.maximize ? '🔍 Will maximize on start' : '📐 Normal layout on start');
 });
 
+// Download a single self-contained HTML file (everything inlined)
+$('downloadOfflineBtn').addEventListener('click', async () => {
+  const btn = $('downloadOfflineBtn');
+  btn.disabled = true;
+  btn.textContent = 'Building...';
+  try {
+    // Fetch the current HTML and JS source
+    const [htmlRes, jsRes] = await Promise.all([
+      fetch('index.html'),
+      fetch(document.querySelector('script[src*="app.js"]').src),
+    ]);
+    let html = await htmlRes.text();
+    const js = await jsRes.text();
+    // Inline the script (replace <script src="app.js?v=..."></script> with inline)
+    html = html.replace(/<script\s+src="app\.js[^"]*"[^>]*><\/script>/,
+      '<script>\n' + js + '\n</script>');
+    // Remove manifest + service worker references (offline file can't use them)
+    html = html.replace(/<link\s+rel="manifest"[^>]*>/g, '');
+    // Trigger download
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'XX-Puzzle-Party-offline.html';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    showToast('✅ Downloaded — share this file with friends!');
+  } catch (e) {
+    console.error(e);
+    showToast('Download failed: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Download';
+  }
+});
+
+// Register service worker for offline support (only on https or localhost)
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.warn('Service Worker registration failed:', err);
+    });
+  });
+}
+
 // ============= IMAGE LIBRARY (IndexedDB) =============
 const DB_NAME = 'puzzle-party-db';
 const STORE = 'images';
