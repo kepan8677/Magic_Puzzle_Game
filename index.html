@@ -266,41 +266,29 @@
     main{padding:12px}
     h1{font-size:17px}
     header{padding:10px 14px}
-
-    /* Reorganize the controls into a clean grid:
-       Row 1: Upload (full width, spans both columns)
-       Row 2: Pieces | Difficulty
-       Row 3: Start (full width)
-       Row 4: Timer | Pause
-       The key fix: every field gets min-width:0 so it shrinks inside its grid cell
-       (default min-width:auto would force the content width and cause overflow). */
     .panel{padding:14px;border-radius:14px}
+
+    /* Simple bulletproof mobile layout using grid-column spans:
+       - Upload + Start span ALL columns (full width)
+       - Pieces, Difficulty, Timer, Pause naturally fall on rows of 2 columns */
     .panel .row{display:grid !important;
       grid-template-columns:1fr 1fr !important;
-      grid-template-areas:
-        "upload upload"
-        "pieces diff"
-        "start  start"
-        "timer  pause" !important;
-      gap:10px !important;
+      gap:12px !important;
       align-items:stretch !important}
     .panel .row > .field{
       margin:0 !important;
-      width:100% !important;
       min-width:0 !important;
+      width:auto !important;
       flex:none !important;
       align-items:stretch !important}
-    .field-upload{grid-area:upload}
-    .field-pieces{grid-area:pieces}
-    .field-diff{grid-area:diff}
-    .field-start{grid-area:start}
-    .field-timer{grid-area:timer;align-items:flex-start !important}
-    .field-pause{grid-area:pause;align-items:flex-end !important}
+    .field-upload,.field-start{grid-column:1 / -1 !important}
+    .field-timer,.field-pause{align-items:flex-start !important}
 
     .field-upload label{text-align:center !important}
 
     .field select,.field input{width:100% !important;min-width:0}
     .field-start button,.field-pause button{width:100% !important;min-width:0}
+    .field-pause{align-items:stretch !important}
 
     .upload-wrap{min-width:0 !important;flex:none !important;
       align-items:stretch !important;gap:8px}
@@ -316,26 +304,18 @@
     select{min-height:44px;padding:10px 12px}
 
     .timer{font-size:17px;white-space:nowrap}
-    .field-timer label{align-self:flex-start}
 
-    /* Library + history compact on mobile */
     .library{grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;
       max-height:200px}
-
-    /* Preview smaller */
     .preview-side{width:120px;max-width:36%}
-
-    /* Header buttons compact */
     header button{padding:6px 10px;font-size:12px}
-
-    /* Modals: more screen space */
     .modal{padding:12px}
     .modal-box{padding:18px}
     .share-grid{grid-template-columns:1fr}
     .setting-row{padding:12px}
   }
 
-  /* iPhone SE / iPhone 12/13/14 mini and similar small screens */
+  /* iPhone SE / mini and similar small screens */
   @media(max-width:380px){
     .upload-btn{padding:14px 8px !important;font-size:15px !important;gap:8px !important}
     .upload-btn span:first-child{font-size:18px !important}

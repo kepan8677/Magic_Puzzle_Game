@@ -1,7 +1,7 @@
 // XX Puzzle Party — Service Worker (offline cache)
 // Caches all app files on first visit so the game works fully offline afterward.
 
-const CACHE_NAME = 'puzzle-party-v1';
+const CACHE_NAME = 'puzzle-party-v2';
 const ASSETS = [
   './',
   './index.html',
