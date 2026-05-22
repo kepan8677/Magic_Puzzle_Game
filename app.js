@@ -79,6 +79,27 @@ $('clearBtn').onclick = () => {
 };
 renderHistory();
 
+// ============= THEME TOGGLE (Normal vs Focus Mode) =============
+const THEME_KEY = 'puzzle_theme_v1';
+function applyTheme(mode) {
+  if (mode === 'focus') {
+    document.body.classList.add('focus-mode');
+    $('themeBtn').textContent = '☀️';
+    $('themeBtn').title = 'Switch to Normal mode';
+  } else {
+    document.body.classList.remove('focus-mode');
+    $('themeBtn').textContent = '🌙';
+    $('themeBtn').title = 'Switch to Focus mode (dim everything except the board)';
+  }
+}
+applyTheme(localStorage.getItem(THEME_KEY) || 'normal');
+$('themeBtn').onclick = () => {
+  const next = document.body.classList.contains('focus-mode') ? 'normal' : 'focus';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+  showToast(next === 'focus' ? '🌙 Focus mode' : '☀️ Normal mode');
+};
+
 // ============= FILE UPLOAD =============
 const dropEl = $('drop');
 const fileInput = $('file');

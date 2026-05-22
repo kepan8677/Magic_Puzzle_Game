@@ -79,6 +79,16 @@
   .link-row input{flex:1;font-size:13px}
   .share-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
   .empty{color:var(--muted);text-align:center;padding:14px;font-size:13px}
+
+  /* === Focus Mode: dim everything except the board + preview === */
+  body.focus-mode{background:#000}
+  body.focus-mode header{background:#0a0a18;opacity:.55;transition:opacity .2s}
+  body.focus-mode header:hover{opacity:1}
+  body.focus-mode .panel{opacity:.35;transition:opacity .2s,filter .2s;filter:saturate(.6)}
+  body.focus-mode .panel:hover{opacity:1;filter:none}
+  body.focus-mode .panel.focus-keep{opacity:1;filter:none;
+    box-shadow:0 0 0 2px var(--accent),0 8px 32px rgba(124,92,255,.25)}
+
   /* Board with preview centered above */
   .board-wrap{display:flex;flex-direction:column;gap:14px;align-items:center}
   .preview-side{display:flex;flex-direction:column;gap:6px;width:180px;max-width:40%}
@@ -101,6 +111,7 @@
 <header>
   <h1>🧩 XX Puzzle Party</h1>
   <div style="display:flex;gap:10px;align-items:center">
+    <button id="themeBtn" class="btn-ghost" style="padding:6px 10px;font-size:13px" title="Toggle Focus Mode">🌙</button>
     <button id="shareBtn" class="btn-ghost" style="padding:6px 12px;font-size:13px">📤 Share</button>
     <span class="total" style="font-size:13px;color:var(--muted)">Total<b id="totalScore">0</b></span>
   </div>
@@ -146,7 +157,7 @@
   </div>
 
   <!-- Board with preview on the left -->
-  <div class="panel">
+  <div class="panel focus-keep">
     <div class="board-wrap">
       <div class="preview-side">
         <div class="preview-label">🖼️ Original</div>
@@ -219,6 +230,6 @@
   </div>
 </div>
 
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
