@@ -602,6 +602,17 @@ function endDrag(e) {
 window.addEventListener('pointerup', endDrag);
 window.addEventListener('pointercancel', endDrag);
 
+function snapSolvedPiecesToGrid() {
+  const cell = state.pieces[0] ? (parseFloat(state.pieces[0].style.width) || board.clientWidth / state.gridN) : 0;
+  state.pieces.forEach(p => {
+    const slot = +p.dataset.slotIdx;
+    const row = Math.floor(slot / state.gridN);
+    const col = slot % state.gridN;
+    p.style.left = col * cell + 'px';
+    p.style.top = row * cell + 'px';
+  });
+}
+
 // Win modal handlers
 $('winCloseBtn').onclick = () => $('winModal').classList.remove('show');
 $('winAgainBtn').onclick = () => {
@@ -618,6 +629,7 @@ function checkWin() {
   const elapsed = stopTimer();
   state.running = false;
   state.pieces.forEach(p => p.classList.add('locked'));
+  snapSolvedPiecesToGrid();
   const score = computeScore(elapsed);
   document.body.classList.remove('playing'); // restore normal layout on win
   finishGame(elapsed, score);
