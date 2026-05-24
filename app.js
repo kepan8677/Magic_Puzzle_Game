@@ -425,10 +425,19 @@ function buildPuzzle() {
   state.running = true;
   state.paused = false;
   state.drag = null;
+  board.style.width = '';
+  board.style.height = '';
   board.style.filter = '';
   board.style.pointerEvents = '';
 
+  // Measure after entering playing layout, then freeze the board size for this game.
+  // iPad Safari can resize the visual viewport while scrolling/hiding browser chrome,
+  // which otherwise leaves fixed-size pieces on a different grid than the board.
+  document.body.classList.toggle('playing', !!settings.maximize);
+
   const W = board.clientWidth;
+  board.style.width = W + 'px';
+  board.style.height = W + 'px';
   const N = state.gridN * state.gridN;
   const cell = W / state.gridN;
 
@@ -471,12 +480,53 @@ function buildPuzzle() {
   updateProgress();
   // Maximize board + fade everything else (only if user enabled this in Settings)
   if (settings.maximize) {
-    document.body.classList.add('playing');
     setTimeout(() => board.scrollIntoView({behavior:'smooth', block:'center'}), 100);
   }
 }
 
 // ============= DRAG (Pointer Events) =============
+function clampSlotCoord(value) {
+  return Math.max(0, Math.min(state.gridN - 1, value));
+}
+
+function slotFromGridPoint(x, y, cell) {
+  const col = clampSlotCoord(Math.floor(x / cell));
+  const row = clampSlotCoord(Math.floor(y / cell));
+  return row * state.gridN + col;
+}
+
+function addDropCandidate(candidates, slot) {
+  if (Number.isFinite(slot) && !candidates.includes(slot)) candidates.push(slot);
+}
+
+function chooseDropSlot(piece, drag, cell) {
+  const candidates = [];
+  const br = board.getBoundingClientRect();
+  const left = parseFloat(piece.style.left) || 0;
+  const top = parseFloat(piece.style.top) || 0;
+
+  if (Number.isFinite(drag.lastClientX) && Number.isFinite(drag.lastClientY)) {
+    addDropCandidate(candidates, slotFromGridPoint(
+      drag.lastClientX - br.left,
+      drag.lastClientY - br.top,
+      cell
+    ));
+  }
+  addDropCandidate(candidates, slotFromGridPoint(left + cell / 2, top + cell / 2, cell));
+  addDropCandidate(candidates,
+    clampSlotCoord(Math.round(top / cell)) * state.gridN +
+    clampSlotCoord(Math.round(left / cell))
+  );
+
+  const mySlot = +piece.dataset.slotIdx;
+  const swappable = candidates.find(slot => {
+    if (slot === mySlot) return false;
+    const other = state.pieces.find(q => +q.dataset.slotIdx === slot);
+    return other && !other.classList.contains('locked');
+  });
+  return swappable ?? candidates[0] ?? mySlot;
+}
+
 function onPieceDown(e) {
   const p = e.currentTarget;
   if (p.classList.contains('locked') || state.paused || !state.running) return;
@@ -488,9 +538,11 @@ function onPieceDown(e) {
     pointerId: e.pointerId,
     ox: e.clientX - r.left,
     oy: e.clientY - r.top,
+    lastClientX: e.clientX,
+    lastClientY: e.clientY,
     origX: parseFloat(p.style.left) || 0,
     origY: parseFloat(p.style.top) || 0,
-    cell: board.clientWidth / state.gridN,
+    cell: parseFloat(p.style.width) || r.width || board.clientWidth / state.gridN,
   };
   e.preventDefault();
 }
@@ -499,24 +551,29 @@ window.addEventListener('pointermove', e => {
   const d = state.drag;
   if (!d || e.pointerId !== d.pointerId) return;
   const br = board.getBoundingClientRect();
+  d.lastClientX = e.clientX;
+  d.lastClientY = e.clientY;
   d.piece.style.left = (e.clientX - br.left - d.ox) + 'px';
   d.piece.style.top  = (e.clientY - br.top  - d.oy) + 'px';
-});
+  e.preventDefault();
+}, { passive: false });
 
 function endDrag(e) {
   const d = state.drag;
   if (!d) return;
   if (e && e.pointerId !== undefined && e.pointerId !== d.pointerId) return;
+  if (e && Number.isFinite(e.clientX) && Number.isFinite(e.clientY)) {
+    d.lastClientX = e.clientX;
+    d.lastClientY = e.clientY;
+  }
   state.drag = null;
   const p = d.piece;
+  try { p.releasePointerCapture(d.pointerId); } catch(_) {}
   p.classList.remove('dragging');
   const cell = d.cell;
-  const x = parseFloat(p.style.left), y = parseFloat(p.style.top);
-  let tCol = Math.round(x / cell);
-  let tRow = Math.round(y / cell);
-  tCol = Math.max(0, Math.min(state.gridN - 1, tCol));
-  tRow = Math.max(0, Math.min(state.gridN - 1, tRow));
-  const targetSlot = tRow * state.gridN + tCol;
+  const targetSlot = chooseDropSlot(p, d, cell);
+  const tRow = Math.floor(targetSlot / state.gridN);
+  const tCol = targetSlot % state.gridN;
   const mySlot = +p.dataset.slotIdx;
 
   if (targetSlot === mySlot) {
