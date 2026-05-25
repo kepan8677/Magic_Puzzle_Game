@@ -219,6 +219,38 @@
   .lib-empty{color:var(--muted);font-size:13px;text-align:center;padding:18px;
     grid-column:1/-1;background:rgba(255,255,255,.02);border-radius:10px}
 
+  /* Levels (campaign mode) */
+  .level-stats{display:flex;gap:14px;font-size:13px;color:var(--muted);
+    margin-bottom:12px;flex-wrap:wrap}
+  .level-stats b{color:var(--ok2);font-size:16px;margin-left:4px}
+  .level-stats .stat-points b{color:var(--accent2)}
+  .levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+    gap:10px;padding:4px}
+  .level-card{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;
+    border:2px solid var(--border);background:#000;cursor:pointer;
+    transition:all .18s cubic-bezier(.34,1.4,.64,1)}
+  .level-card:not(.locked):hover{transform:scale(1.04);
+    box-shadow:0 6px 18px rgba(124,92,255,.4);border-color:var(--accent)}
+  .level-card.locked{cursor:not-allowed;filter:grayscale(.85) brightness(.45)}
+  .level-card.completed{border-color:var(--ok);
+    box-shadow:0 0 0 2px var(--ok),0 4px 12px rgba(34,197,94,.3)}
+  .level-card.current{border-color:var(--warn);
+    box-shadow:0 0 0 2px var(--warn),0 4px 14px rgba(245,158,11,.5)}
+  .level-card img{width:100%;height:100%;object-fit:cover;display:block}
+  .level-overlay{position:absolute;inset:0;display:flex;flex-direction:column;
+    justify-content:flex-end;padding:6px;
+    background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.75) 100%)}
+  .level-num{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.65);
+    color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;
+    backdrop-filter:blur(4px)}
+  .level-score-badge{position:absolute;top:6px;right:6px;background:var(--ok);
+    color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;
+    box-shadow:0 2px 6px rgba(34,197,94,.4)}
+  .level-lock{position:absolute;inset:0;display:flex;align-items:center;
+    justify-content:center;font-size:32px;color:#fff;text-shadow:0 2px 8px #000}
+  .level-name{font-size:11px;font-weight:700;color:#fff;line-height:1.2;
+    text-shadow:0 1px 3px #000}
+
   /* === Focus Mode: dim everything except the board + preview === */
   body.focus-mode{background:#000}
   body.focus-mode header{background:#0a0a18;opacity:.55;transition:opacity .2s}
@@ -381,6 +413,19 @@
     </div>
   </div>
 
+  <!-- Levels (campaign mode: 30 pre-installed Slam Dunk-themed puzzles) -->
+  <div class="panel" id="levelsPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="margin:0;font-size:15px"><span data-i18n="levels">🏀 Levels</span> <span style="color:var(--muted);font-weight:normal;font-size:12px" data-i18n="levels_subtitle">— Slam Dunk Campaign</span></h3>
+      <button id="resetLevelsBtn" class="btn-ghost" style="padding:4px 10px;font-size:12px" data-i18n="reset_progress">Reset</button>
+    </div>
+    <div class="level-stats">
+      <span data-i18n="level_completed">Completed</span><b id="levelDone">0</b> <span style="color:var(--muted)">/ 30</span>
+      <span class="stat-points"><span data-i18n="level_total_score">Total</span><b id="levelTotal">0</b></span>
+    </div>
+    <div id="levels" class="levels"></div>
+  </div>
+
   <!-- Board with preview on the left -->
   <div class="panel focus-keep">
     <div class="board-wrap">
@@ -504,6 +549,7 @@
   </div>
 </div>
 
-<script src="app.js?v=14"></script>
+<script src="levels.js?v=15"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>

@@ -95,6 +95,16 @@ const I18N = {
     win_info: '{n}×{n} · Difficulty {d}',
     history_row: '{score} pts · {n}×{n} · diff {d} · {time}',
     share_text: "Let's play puzzles!",
+    levels: '🏀 Levels',
+    levels_subtitle: '— Slam Dunk Campaign',
+    level_completed: 'Completed',
+    level_total_score: 'Total',
+    reset_progress: 'Reset',
+    confirm_reset_levels: 'Reset all level progress? You will lose all unlocks and scores.',
+    toast_level_locked: '🔒 Complete the previous level first',
+    toast_level_unlocked: '🎉 Level {n} unlocked!',
+    toast_level_complete: '⭐ Level {n} complete · {score} pts',
+    level_lock_msg: 'Locked',
   },
   zh: {
     appTitle: '🧩 XX 拼图派对',
@@ -172,6 +182,16 @@ const I18N = {
     win_info: '{n}×{n} · 难度 {d}',
     history_row: '{score} 分 · {n}×{n} · 难度 {d} · {time}',
     share_text: '一起来玩拼图吧！',
+    levels: '🏀 关卡',
+    levels_subtitle: '— 灌篮高手系列',
+    level_completed: '已完成',
+    level_total_score: '总得分',
+    reset_progress: '重置',
+    confirm_reset_levels: '重置全部关卡进度？将清除所有解锁和得分。',
+    toast_level_locked: '🔒 请先完成上一关',
+    toast_level_unlocked: '🎉 第 {n} 关已解锁！',
+    toast_level_complete: '⭐ 第 {n} 关完成 · {score} 分',
+    level_lock_msg: '未解锁',
   },
 };
 
@@ -443,6 +463,7 @@ async function useLibraryImage(rec) {
   if (state.imgURL) URL.revokeObjectURL(state.imgURL);
   state.imgURL = URL.createObjectURL(rec.blob);
   state.imgFile = null;
+  state.activeLevelIdx = null;
   currentLibId = rec.id;
   showSelectedFile(rec.name, rec.thumb, t('drop_hint_library'));
   // Preview
@@ -464,6 +485,81 @@ $('clearLibBtn').onclick = async () => {
   }
 };
 renderLibrary();
+
+// ============= LEVELS (Slam Dunk Campaign) =============
+const LEVELS_KEY = 'puzzle_levels_v1';
+const loadLevelProgress = () => {
+  try { return JSON.parse(localStorage.getItem(LEVELS_KEY) || '{}'); }
+  catch(_) { return {}; }
+};
+const saveLevelProgress = p => localStorage.setItem(LEVELS_KEY, JSON.stringify(p));
+function isLevelUnlocked(idx) {
+  if (idx === 0) return true;
+  const p = loadLevelProgress();
+  return !!(p[idx] && p[idx].completed) || !!(p[idx - 1] && p[idx - 1].completed);
+}
+function levelStats() {
+  const p = loadLevelProgress();
+  let done = 0, total = 0;
+  Object.values(p).forEach(v => { if (v.completed) { done++; total += v.score || 0; } });
+  return { done, total };
+}
+function renderLevels() {
+  if (!window.SLAM_DUNK_LEVELS) return;
+  const wrap = $('levels');
+  const p = loadLevelProgress();
+  const { done, total } = levelStats();
+  $('levelDone').textContent = done;
+  $('levelTotal').textContent = total;
+  wrap.innerHTML = '';
+  SLAM_DUNK_LEVELS.forEach((lvl, i) => {
+    const unlocked = isLevelUnlocked(i);
+    const rec = p[i];
+    const completed = !!(rec && rec.completed);
+    const isCurrent = unlocked && !completed && (i === 0 || (p[i-1] && p[i-1].completed));
+    const card = document.createElement('div');
+    card.className = 'level-card' + (completed ? ' completed' : '') +
+      (!unlocked ? ' locked' : '') + (isCurrent ? ' current' : '');
+    card.title = `Level ${i+1}: ${lvl.name}` + (completed ? ` (✓ ${rec.score} pts)` : '');
+    card.innerHTML = `
+      <img src="${lvl.image}" alt="">
+      <div class="level-overlay">
+        <div class="level-name">${lvl.name}</div>
+      </div>
+      <div class="level-num">LV ${i+1}</div>
+      ${completed ? `<div class="level-score-badge">${rec.score}</div>` : ''}
+      ${!unlocked ? `<div class="level-lock">🔒</div>` : ''}
+    `;
+    card.addEventListener('click', () => {
+      if (!unlocked) { showToast(t('toast_level_locked')); return; }
+      startLevel(i);
+    });
+    wrap.appendChild(card);
+  });
+}
+function startLevel(idx) {
+  const lvl = SLAM_DUNK_LEVELS[idx];
+  if (!lvl) return;
+  state.gridN = 10;
+  state.diff = 5;
+  state.imgURL = lvl.image;
+  state.imgFile = null;
+  state.activeLevelIdx = idx;
+  $('previewImg').src = state.imgURL;
+  $('previewImg').style.display = 'block';
+  $('previewEmpty').style.display = 'none';
+  showSelectedFile(`LV ${idx+1} · ${lvl.name}`, state.imgURL, lvl.subtitle);
+  $('startBtn').disabled = false;
+  buildPuzzle();
+}
+$('resetLevelsBtn').onclick = () => {
+  if (levelStats().done === 0) return;
+  if (confirm(t('confirm_reset_levels'))) {
+    saveLevelProgress({});
+    renderLevels();
+  }
+};
+renderLevels();
 
 // ============= FILE UPLOAD =============
 const dropEl = $('drop');
@@ -518,6 +614,7 @@ async function handleFile(f) {
   if (state.imgURL) URL.revokeObjectURL(state.imgURL);
   state.imgURL = URL.createObjectURL(cropped.blob);
   state.imgFile = f;
+  state.activeLevelIdx = null;
   showSelectedFile(f.name, state.imgURL, t('drop_hint_uploaded'));
   $('startBtn').disabled = false;
   // Update side-preview
@@ -784,6 +881,28 @@ function computeScore(ms) {
 }
 
 function finishGame(elapsed, score) {
+  // If this was a level, mark it complete and unlock the next
+  if (typeof state.activeLevelIdx === 'number') {
+    const idx = state.activeLevelIdx;
+    const progress = loadLevelProgress();
+    const prev = progress[idx] || {};
+    // Keep the best score
+    const best = Math.max(prev.score || 0, score);
+    progress[idx] = {
+      completed: true,
+      score: best,
+      bestTimeMs: prev.bestTimeMs ? Math.min(prev.bestTimeMs, elapsed) : elapsed,
+      lastPlayed: Date.now(),
+    };
+    const wasNewlyUnlocked = idx + 1 < SLAM_DUNK_LEVELS.length && !(progress[idx+1] && progress[idx+1].completed);
+    saveLevelProgress(progress);
+    renderLevels();
+    showToast(t('toast_level_complete', {n: idx+1, score: best}));
+    if (wasNewlyUnlocked) {
+      setTimeout(() => showToast(t('toast_level_unlocked', {n: idx+2})), 2700);
+    }
+    state.activeLevelIdx = null; // clear so a replay doesn't re-fire level logic until startLevel is called again
+  }
   showWinCelebration(elapsed, score);
   setTimeout(() => {
     try {
