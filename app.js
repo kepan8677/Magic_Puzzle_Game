@@ -540,7 +540,7 @@ function renderLevels() {
 function startLevel(idx) {
   const lvl = SLAM_DUNK_LEVELS[idx];
   if (!lvl) return;
-  state.gridN = 10;
+  state.gridN = 8;
   state.diff = 5;
   state.imgURL = lvl.image;
   state.imgFile = null;
