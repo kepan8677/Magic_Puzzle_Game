@@ -17,6 +17,200 @@ function fmtTime(ms) {
   return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
 }
 
+// ============= I18N (English / Chinese) =============
+const I18N = {
+  en: {
+    appTitle: '🧩 XX Puzzle Party',
+    total: 'Total',
+    share: '📤 Share',
+    label_picture: '1. Picture',
+    upload: 'Upload Image',
+    label_pieces: '2. Pieces',
+    label_diff: '3. Difficulty',
+    diff_easy: '1 - Easy',
+    diff_hard: '5 - Hard',
+    start: '▶ Start Game',
+    label_time: 'Time · Solved',
+    pause: '⏸ Pause',
+    resume: '▶ Resume',
+    preview_label: '🖼️ Original',
+    preview_empty: 'Pick a picture to see preview',
+    library: '🖼️ Image Library',
+    library_count: 'saved',
+    library_clear: 'Clear All',
+    library_empty: "No saved images yet — upload one above and it'll be saved here for next time.",
+    history: '📜 History',
+    history_clear: 'Clear',
+    history_empty: 'No games yet — finish one to see it here!',
+    history_pts: 'pts',
+    history_diff: 'diff',
+    settings_title: '⚙️ Settings',
+    settings_desc: 'Customize how the game behaves.',
+    settings_lang: '🌐 Language',
+    settings_lang_desc: 'Choose your preferred language.',
+    settings_focus: '🌙 Focus Mode',
+    settings_focus_desc: 'Dim everything except the puzzle board for a cleaner view',
+    settings_max: '🔍 Maximize on Start',
+    settings_max_desc: 'Auto-expand the board and fade other panels when a game begins',
+    settings_offline: '📥 Save for Offline Use',
+    settings_offline_desc: 'Download a single HTML file you can play anywhere — no internet needed. Share it via WeChat or AirDrop.',
+    download: 'Download',
+    downloading: 'Building...',
+    done: 'Done',
+    close: 'Close',
+    share_title: '📤 Share with friends',
+    share_desc: 'Copy this link and send it via Message, WeChat, or any chat app:',
+    copy: 'Copy',
+    share_system: '📱 System Share',
+    share_wechat: '💬 WeChat Tip',
+    share_sms: '💌 Message / SMS',
+    share_email: '✉️ Email',
+    wechat_tip: '<b style="color:#07c160">WeChat sharing:</b><br>1. Tap <b>Copy</b> above<br>2. Open WeChat → choose a chat<br>3. Long-press the input box → <b>Paste</b><br>4. Send — friends tap the link to play',
+    win_title: 'Puzzle Solved!',
+    win_time: 'Time',
+    win_score: 'Score',
+    win_again: '▶ Play Again',
+    drop_hint_uploaded: '✓ Cropped & saved · click to change',
+    drop_hint_library: '📚 From library · click to change',
+    delete_btn: 'Delete',
+    toast_copied: '✅ Link copied!',
+    toast_copy_unsupported: 'Copy not supported — please select and copy manually',
+    toast_solved: '🎉 Solved! {score} pts',
+    toast_lib_loaded: '✅ Loaded from library',
+    toast_lib_cleared: 'Library cleared',
+    toast_history_cleared: 'History cleared',
+    toast_focus_on: '🌙 Focus mode on',
+    toast_focus_off: '☀️ Focus mode off',
+    toast_max_on: '🔍 Will maximize on start',
+    toast_max_off: '📐 Normal layout on start',
+    toast_download_ok: '✅ Downloaded — share this file with friends!',
+    toast_download_fail: 'Download failed: {err}',
+    toast_image_only: 'Please choose an image file',
+    toast_process_fail: 'Could not process image — try another',
+    toast_storage_full: 'Could not save history (storage full?)',
+    toast_share_unsupported: 'System share not supported here — use Copy',
+    confirm_delete_image: 'Delete this image?',
+    confirm_clear_library: 'Delete all {n} saved images?',
+    confirm_clear_history: 'Clear all history?',
+    win_info: '{n}×{n} · Difficulty {d}',
+    history_row: '{score} pts · {n}×{n} · diff {d} · {time}',
+    share_text: "Let's play puzzles!",
+  },
+  zh: {
+    appTitle: '🧩 XX 拼图派对',
+    total: '总分',
+    share: '📤 分享',
+    label_picture: '1. 图片',
+    upload: '上传图片',
+    label_pieces: '2. 拼块',
+    label_diff: '3. 难度',
+    diff_easy: '1 - 简单',
+    diff_hard: '5 - 困难',
+    start: '▶ 开始游戏',
+    label_time: '用时 · 完成',
+    pause: '⏸ 暂停',
+    resume: '▶ 继续',
+    preview_label: '🖼️ 原图',
+    preview_empty: '选择图片以查看预览',
+    library: '🖼️ 图片库',
+    library_count: '张已保存',
+    library_clear: '全部清除',
+    library_empty: '暂无保存的图片 — 上传一张图片后会自动保存到这里。',
+    history: '📜 历史记录',
+    history_clear: '清除',
+    history_empty: '暂无游戏 — 完成一局后会显示在这里！',
+    history_pts: '分',
+    history_diff: '难度',
+    settings_title: '⚙️ 设置',
+    settings_desc: '自定义游戏行为。',
+    settings_lang: '🌐 语言',
+    settings_lang_desc: '选择你偏好的语言。',
+    settings_focus: '🌙 专注模式',
+    settings_focus_desc: '游戏过程中调暗除拼图区域外的其他界面',
+    settings_max: '🔍 开始时最大化',
+    settings_max_desc: '游戏开始时自动放大拼图区域并淡化其他面板',
+    settings_offline: '📥 保存为离线版',
+    settings_offline_desc: '下载一个完整的 HTML 文件，无需联网即可游玩。可通过微信或 AirDrop 分享。',
+    download: '下载',
+    downloading: '生成中…',
+    done: '完成',
+    close: '关闭',
+    share_title: '📤 分享给朋友',
+    share_desc: '复制下方链接，通过短信、微信或聊天应用发送：',
+    copy: '复制',
+    share_system: '📱 系统分享',
+    share_wechat: '💬 微信',
+    share_sms: '💌 短信',
+    share_email: '✉️ 邮件',
+    wechat_tip: '<b style="color:#07c160">微信分享：</b><br>1. 点击上方<b>复制</b><br>2. 打开微信 → 选择聊天<br>3. 长按输入框 → <b>粘贴</b><br>4. 发送 — 好友点击链接即可游玩',
+    win_title: '拼图完成！',
+    win_time: '用时',
+    win_score: '得分',
+    win_again: '▶ 再玩一次',
+    drop_hint_uploaded: '✓ 已裁剪并保存 · 点击更换',
+    drop_hint_library: '📚 来自图片库 · 点击更换',
+    delete_btn: '删除',
+    toast_copied: '✅ 链接已复制！',
+    toast_copy_unsupported: '此设备不支持自动复制 — 请手动选中复制',
+    toast_solved: '🎉 拼图完成！{score} 分',
+    toast_lib_loaded: '✅ 已从图片库加载',
+    toast_lib_cleared: '图片库已清空',
+    toast_history_cleared: '历史记录已清空',
+    toast_focus_on: '🌙 专注模式已开启',
+    toast_focus_off: '☀️ 专注模式已关闭',
+    toast_max_on: '🔍 开始时会自动最大化',
+    toast_max_off: '📐 开始时保持正常布局',
+    toast_download_ok: '✅ 下载完成 — 把文件分享给朋友吧！',
+    toast_download_fail: '下载失败：{err}',
+    toast_image_only: '请选择图片文件',
+    toast_process_fail: '图片处理失败 — 请换一张试试',
+    toast_storage_full: '无法保存历史记录（存储已满？）',
+    toast_share_unsupported: '此设备不支持系统分享 — 请使用复制',
+    confirm_delete_image: '删除这张图片？',
+    confirm_clear_library: '删除全部 {n} 张已保存的图片？',
+    confirm_clear_history: '清空全部历史记录？',
+    win_info: '{n}×{n} · 难度 {d}',
+    history_row: '{score} 分 · {n}×{n} · 难度 {d} · {time}',
+    share_text: '一起来玩拼图吧！',
+  },
+};
+
+let currentLang = (() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('puzzle_settings_v1') || '{}');
+    if (saved.lang) return saved.lang;
+  } catch(_){}
+  return (navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+})();
+
+function t(key, vars) {
+  let s = (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+  document.title = t('appTitle');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+  // Update language toggle active state
+  document.querySelectorAll('#langToggle .lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === currentLang);
+  });
+  // Re-render dynamic content with new strings
+  if (typeof renderHistory === 'function') renderHistory();
+  if (typeof renderLibrary === 'function') renderLibrary();
+  // Pause button might be showing "Pause" or "Resume"
+  if ($('pauseBtn') && !$('pauseBtn').disabled) {
+    $('pauseBtn').textContent = state && state.paused ? t('resume') : t('pause');
+  }
+}
+
 // ============= STATE =============
 const state = {
   imgURL: null,
@@ -51,30 +245,33 @@ const loadHistory = () => {
 };
 const saveHistory = h => {
   try { localStorage.setItem(HKEY, JSON.stringify(h)); }
-  catch(e) { showToast('Could not save history (storage full?)'); }
+  catch(e) { showToast(t('toast_storage_full')); }
 };
 function renderHistory() {
   const h = loadHistory();
   $('totalScore').textContent = h.reduce((s,g) => s + (g.score||0), 0);
   if (!h.length) {
-    $('history').innerHTML = '<div class="empty">No games yet — finish one to see it here!</div>';
+    $('history').innerHTML = `<div class="empty">${t('history_empty')}</div>`;
     return;
   }
-  $('history').innerHTML = h.slice().reverse().map(g => `
+  $('history').innerHTML = h.slice().reverse().map(g => {
+    const meta = t('history_row', {score:g.score, n:g.gridN, d:g.diff, time:g.timeStr});
+    return `
     <div class="game-row">
       <img src="${g.thumb}" alt="">
       <div class="meta">
-        <div><b>${g.score}</b> pts · ${g.gridN}×${g.gridN} · diff ${g.diff} · ${g.timeStr}</div>
+        <div>${meta}</div>
         <div>${new Date(g.date).toLocaleString()}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 $('clearBtn').onclick = () => {
   if (!loadHistory().length) return;
-  if (confirm('Clear all history?')) {
+  if (confirm(t('confirm_clear_history'))) {
     saveHistory([]);
     renderHistory();
-    showToast('History cleared');
+    showToast(t('toast_history_cleared'));
   }
 };
 renderHistory();
@@ -108,19 +305,31 @@ $('setFocus').addEventListener('change', e => {
   settings.focus = e.target.checked;
   saveSettings(settings);
   applyFocus();
-  showToast(settings.focus ? '🌙 Focus mode on' : '☀️ Focus mode off');
+  showToast(settings.focus ? t('toast_focus_on') : t('toast_focus_off'));
 });
 $('setMaximize').addEventListener('change', e => {
   settings.maximize = e.target.checked;
   saveSettings(settings);
-  showToast(settings.maximize ? '🔍 Will maximize on start' : '📐 Normal layout on start');
+  showToast(settings.maximize ? t('toast_max_on') : t('toast_max_off'));
+});
+
+// Language toggle (Settings → 🌐 Language)
+document.querySelectorAll('#langToggle .lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const newLang = btn.dataset.lang;
+    if (newLang === currentLang) return;
+    currentLang = newLang;
+    settings.lang = newLang;
+    saveSettings(settings);
+    applyLanguage();
+  });
 });
 
 // Download a single self-contained HTML file (everything inlined)
 $('downloadOfflineBtn').addEventListener('click', async () => {
   const btn = $('downloadOfflineBtn');
   btn.disabled = true;
-  btn.textContent = 'Building...';
+  btn.textContent = t('downloading');
   try {
     // Fetch the current HTML and JS source
     const [htmlRes, jsRes] = await Promise.all([
@@ -142,13 +351,13 @@ $('downloadOfflineBtn').addEventListener('click', async () => {
     document.body.appendChild(a);
     a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-    showToast('✅ Downloaded — share this file with friends!');
+    showToast(t('toast_download_ok'));
   } catch (e) {
     console.error(e);
-    showToast('Download failed: ' + e.message);
+    showToast(t('toast_download_fail', {err: e.message}));
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Download';
+    btn.textContent = t('download');
   }
 });
 
@@ -206,9 +415,9 @@ async function renderLibrary() {
   catch(e) { console.error('Library list failed', e); return; }
   items.sort((a,b) => b.addedAt - a.addedAt); // newest first
   const wrap = $('library');
-  $('libCount').textContent = items.length ? `· ${items.length} saved` : '';
+  $('libCount').textContent = items.length ? `· ${items.length} ${t('library_count')}` : '';
   if (!items.length) {
-    wrap.innerHTML = '<div class="lib-empty">No saved images yet — upload one above and it\'ll be saved here for next time.</div>';
+    wrap.innerHTML = `<div class="lib-empty">${t('library_empty')}</div>`;
     return;
   }
   wrap.innerHTML = '';
@@ -216,11 +425,11 @@ async function renderLibrary() {
     const div = document.createElement('div');
     div.className = 'lib-item' + (rec.id === currentLibId ? ' active' : '');
     div.title = rec.name + ' · ' + new Date(rec.addedAt).toLocaleString();
-    div.innerHTML = `<img src="${rec.thumb}" alt=""><button class="lib-del" title="Delete">✕</button>`;
+    div.innerHTML = `<img src="${rec.thumb}" alt=""><button class="lib-del" title="${t('delete_btn')}">✕</button>`;
     div.onclick = e => {
       if (e.target.classList.contains('lib-del')) {
         e.stopPropagation();
-        if (confirm('Delete this image?')) {
+        if (confirm(t('confirm_delete_image'))) {
           lib.del(rec.id).then(renderLibrary);
         }
         return;
@@ -235,23 +444,23 @@ async function useLibraryImage(rec) {
   state.imgURL = URL.createObjectURL(rec.blob);
   state.imgFile = null;
   currentLibId = rec.id;
-  showSelectedFile(rec.name, rec.thumb, '📚 From library · click to change');
+  showSelectedFile(rec.name, rec.thumb, t('drop_hint_library'));
   // Preview
   $('previewImg').src = state.imgURL;
   $('previewImg').style.display = 'block';
   $('previewEmpty').style.display = 'none';
   $('startBtn').disabled = false;
   renderLibrary(); // re-render to show "active" highlight
-  showToast('✅ Loaded from library');
+  showToast(t('toast_lib_loaded'));
 }
 $('clearLibBtn').onclick = async () => {
   const items = await lib.list();
   if (!items.length) return;
-  if (confirm(`Delete all ${items.length} saved images?`)) {
+  if (confirm(t('confirm_clear_library', {n:items.length}))) {
     await lib.clear();
     currentLibId = null;
     renderLibrary();
-    showToast('Library cleared');
+    showToast(t('toast_lib_cleared'));
   }
 };
 renderLibrary();
@@ -294,7 +503,7 @@ function cropToSquare(file) {
 async function handleFile(f) {
   if (!f) return;
   if (!f.type.startsWith('image/')) {
-    showToast('Please choose an image file');
+    showToast(t('toast_image_only'));
     return;
   }
   $('startBtn').disabled = true;
@@ -303,13 +512,13 @@ async function handleFile(f) {
     cropped = await cropToSquare(f);
   } catch (e) {
     console.error(e);
-    showToast('Could not process image — try another');
+    showToast(t('toast_process_fail'));
     return;
   }
   if (state.imgURL) URL.revokeObjectURL(state.imgURL);
   state.imgURL = URL.createObjectURL(cropped.blob);
   state.imgFile = f;
-  showSelectedFile(f.name, state.imgURL, '✓ Cropped & saved · click to change');
+  showSelectedFile(f.name, state.imgURL, t('drop_hint_uploaded'));
   $('startBtn').disabled = false;
   // Update side-preview
   $('previewImg').src = state.imgURL;
@@ -374,7 +583,7 @@ function startTimer() {
     t.innerHTML = fmtTime(currentElapsed()) + ' · ' + prog;
   }, 250);
   $('pauseBtn').disabled = false;
-  $('pauseBtn').textContent = '⏸ Pause';
+  $('pauseBtn').textContent = t('pause');
 }
 function stopTimer() {
   const elapsed = currentElapsed();
@@ -398,13 +607,13 @@ $('pauseBtn').onclick = () => {
   if (state.paused) {
     state.paused = false;
     state.startTime = Date.now();
-    $('pauseBtn').textContent = '⏸ Pause';
+    $('pauseBtn').textContent = t('pause');
     board.style.filter = '';
     board.style.pointerEvents = '';
   } else {
     state.paused = true;
     state.elapsedBeforePause += Date.now() - state.startTime;
-    $('pauseBtn').textContent = '▶ Resume';
+    $('pauseBtn').textContent = t('resume');
     board.style.filter = 'blur(10px) brightness(.5)';
     board.style.pointerEvents = 'none';
   }
@@ -605,13 +814,13 @@ function showWinCelebration(elapsed, score) {
   const m = $('winModal');
   $('winTime').textContent = fmtTime(elapsed);
   $('winScore').textContent = score;
-  $('winInfo').textContent = `${state.gridN}×${state.gridN} · Difficulty ${state.diff}`;
+  $('winInfo').textContent = t('win_info', {n: state.gridN, d: state.diff});
   m.classList.add('show');
   board.animate(
     [{filter:'brightness(1)'}, {filter:'brightness(1.4)'}, {filter:'brightness(1)'}],
     {duration: 800, iterations: 2}
   );
-  showToast(`🎉 Solved! ${score} pts`);
+  showToast(t('toast_solved', {score: score}));
 }
 
 // ============= SHARE =============
@@ -638,22 +847,22 @@ $('copyBtn').onclick = async () => {
   const url = $('shareLink').value;
   try {
     await navigator.clipboard.writeText(url);
-    showToast('✅ Link copied!');
+    showToast(t('toast_copied'));
   } catch(e) {
     $('shareLink').select();
     $('shareLink').setSelectionRange(0, 9999);
-    try { document.execCommand('copy'); showToast('✅ Link copied!'); }
-    catch(_) { showToast('Copy not supported — please select and copy manually'); }
+    try { document.execCommand('copy'); showToast(t('toast_copied')); }
+    catch(_) { showToast(t('toast_copy_unsupported')); }
   }
 };
 
 $('sysShareBtn').onclick = async () => {
   const url = getShareURL();
   if (navigator.share) {
-    try { await navigator.share({title:'🧩 XX Puzzle Party', text:"Let's play puzzles!", url}); }
+    try { await navigator.share({title: t('appTitle'), text: t('share_text'), url}); }
     catch(_) {}
   } else {
-    showToast('System share not supported here — use Copy');
+    showToast(t('toast_share_unsupported'));
   }
 };
 $('wechatBtn').onclick = () => {
@@ -661,13 +870,16 @@ $('wechatBtn').onclick = () => {
 };
 $('smsBtn').onclick = () => {
   const url = getShareURL();
-  location.href = `sms:?&body=${encodeURIComponent("Let's play puzzles! " + url)}`;
+  location.href = `sms:?&body=${encodeURIComponent(t('share_text') + ' ' + url)}`;
 };
 $('mailBtn').onclick = () => {
   const url = getShareURL();
-  location.href = `mailto:?subject=${encodeURIComponent('🧩 XX Puzzle Party')}&body=${encodeURIComponent("Let's play puzzles!\n\n" + url)}`;
+  location.href = `mailto:?subject=${encodeURIComponent(t('appTitle'))}&body=${encodeURIComponent(t('share_text') + '\n\n' + url)}`;
 };
 
 window.addEventListener('error', e => {
   console.error('Puzzle error:', e.message);
 });
+
+// Apply saved language on page load (after all elements are wired up)
+applyLanguage();
