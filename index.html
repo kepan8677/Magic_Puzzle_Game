@@ -127,11 +127,13 @@
     transition:box-shadow .12s,transform .12s}
   .piece:not(.dragging){transition:left .15s cubic-bezier(.34,1.4,.64,1),
     top .15s cubic-bezier(.34,1.4,.64,1),box-shadow .12s}
-  .piece.locked{cursor:default}
+  .piece.locked{cursor:default;box-shadow:inset 0 0 0 3px rgba(34,197,94,.95), inset 0 0 0 4px rgba(0,0,0,.25)}
+  /* When puzzle is fully solved, hide the green grid so the final image is seamless */
+  #board.solved .piece{box-shadow:none !important;transition:box-shadow .4s ease-out}
   .piece.just-locked{animation:lockedFlash .55s ease-out}
   @keyframes lockedFlash {
-    0% { box-shadow: inset 0 0 0 4px rgba(34,197,94,.85), 0 0 0 0 rgba(34,197,94,.5); }
-    100% { box-shadow: inset 0 0 0 0 rgba(34,197,94,0), 0 0 12px 4px rgba(34,197,94,0); }
+    0% { box-shadow: inset 0 0 0 6px rgba(34,197,94,1), 0 0 0 0 rgba(34,197,94,.7); transform: scale(1.04); }
+    100% { box-shadow: inset 0 0 0 3px rgba(34,197,94,.95), inset 0 0 0 4px rgba(0,0,0,.25), 0 0 12px 4px rgba(34,197,94,0); transform: scale(1); }
   }
   .piece.dragging{cursor:grabbing;z-index:100;
     box-shadow:0 12px 32px rgba(0,0,0,.7),0 0 0 2px var(--accent);transition:none}
@@ -554,7 +556,7 @@
   </div>
 </div>
 
-<script src="levels.js?v=19"></script>
-<script src="app.js?v=19"></script>
+<script src="levels.js?v=20"></script>
+<script src="app.js?v=20"></script>
 </body>
 </html>

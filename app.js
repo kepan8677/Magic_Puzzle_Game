@@ -727,6 +727,7 @@ $('startBtn').onclick = () => {
 function buildPuzzle() {
   if (state.timerInt) clearInterval(state.timerInt);
   board.innerHTML = '';
+  board.classList.remove('solved');
   state.pieces = [];
   state.running = true;
   state.paused = false;
@@ -882,6 +883,9 @@ function checkWin() {
   const elapsed = stopTimer();
   state.running = false;
   state.pieces.forEach(p => p.classList.add('locked'));
+  // Mark the board as solved → CSS hides the green borders so the final image is seamless
+  // (small delay so the user sees the moment of completion before the borders fade out)
+  setTimeout(() => board.classList.add('solved'), 250);
   const score = computeScore(elapsed);
   document.body.classList.remove('playing'); // restore normal layout on win
   finishGame(elapsed, score);
