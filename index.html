@@ -418,6 +418,18 @@
     </div>
   </div>
 
+  <!-- Board with preview on the left (main window — shown first) -->
+  <div class="panel focus-keep">
+    <div class="board-wrap">
+      <div class="preview-side">
+        <div class="preview-label" data-i18n="preview_label">🖼️ Original</div>
+        <div id="previewEmpty" class="preview-empty" data-i18n="preview_empty">Pick a picture to see preview</div>
+        <img id="previewImg" class="preview-img" style="display:none" alt="Original picture">
+      </div>
+      <div id="board"></div>
+    </div>
+  </div>
+
   <!-- Levels (campaign mode: 30 pre-installed Slam Dunk-themed puzzles) -->
   <div class="panel" id="levelsPanel">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -429,18 +441,6 @@
       <span class="stat-points"><span data-i18n="level_total_score">Total</span><b id="levelTotal">0</b></span>
     </div>
     <div id="levels" class="levels"></div>
-  </div>
-
-  <!-- Board with preview on the left -->
-  <div class="panel focus-keep">
-    <div class="board-wrap">
-      <div class="preview-side">
-        <div class="preview-label" data-i18n="preview_label">🖼️ Original</div>
-        <div id="previewEmpty" class="preview-empty" data-i18n="preview_empty">Pick a picture to see preview</div>
-        <img id="previewImg" class="preview-img" style="display:none" alt="Original picture">
-      </div>
-      <div id="board"></div>
-    </div>
   </div>
 
   <!-- Image Library -->
@@ -554,7 +554,7 @@
   </div>
 </div>
 
-<script src="levels.js?v=18"></script>
-<script src="app.js?v=18"></script>
+<script src="levels.js?v=19"></script>
+<script src="app.js?v=19"></script>
 </body>
 </html>
