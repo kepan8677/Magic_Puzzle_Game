@@ -760,14 +760,17 @@ function buildPuzzle() {
     const sc = i % state.gridN;
     const p = document.createElement('div');
     p.className = 'piece';
-    p.style.width = p.style.height = cell + 'px';
+    // Size pieces 1px larger than the cell so adjacent pieces overlap by 1px
+    // — eliminates sub-pixel gaps when the board width doesn't divide evenly by gridN
+    const pieceSize = Math.ceil(cell) + 1;
+    p.style.width = p.style.height = pieceSize + 'px';
     p.style.backgroundImage = `url("${state.imgURL}")`;
     p.style.backgroundSize = `${W}px ${W}px`;
-    p.style.backgroundPosition = `-${cc*cell}px -${cr*cell}px`;
+    p.style.backgroundPosition = `-${(cc*cell).toFixed(2)}px -${(cr*cell).toFixed(2)}px`;
     p.dataset.correctIdx = correctIdx;
     p.dataset.slotIdx = i;
-    p.style.left = sc * cell + 'px';
-    p.style.top = sr * cell + 'px';
+    p.style.left = Math.round(sc * cell) + 'px';
+    p.style.top  = Math.round(sr * cell) + 'px';
     if (correctIdx === i) p.classList.add('locked');
     p.addEventListener('pointerdown', onPieceDown);
     board.appendChild(p);
@@ -826,24 +829,36 @@ function endDrag(e) {
   const mySlot = +p.dataset.slotIdx;
 
   if (targetSlot === mySlot) {
-    p.style.left = d.origX + 'px';
-    p.style.top  = d.origY + 'px';
+    p.style.left = Math.round(d.origX) + 'px';
+    p.style.top  = Math.round(d.origY) + 'px';
   } else {
     const other = state.pieces.find(q => +q.dataset.slotIdx === targetSlot);
     if (other && !other.classList.contains('locked')) {
       other.dataset.slotIdx = mySlot;
-      other.style.left = d.origX + 'px';
-      other.style.top  = d.origY + 'px';
+      other.style.left = Math.round(d.origX) + 'px';
+      other.style.top  = Math.round(d.origY) + 'px';
       p.dataset.slotIdx = targetSlot;
-      p.style.left = tCol * cell + 'px';
-      p.style.top  = tRow * cell + 'px';
+      p.style.left = Math.round(tCol * cell) + 'px';
+      p.style.top  = Math.round(tRow * cell) + 'px';
       [p, other].forEach(pc => {
-        if (+pc.dataset.slotIdx === +pc.dataset.correctIdx) pc.classList.add('locked');
-        else pc.classList.remove('locked');
+        const wasLocked = pc.classList.contains('locked');
+        if (+pc.dataset.slotIdx === +pc.dataset.correctIdx) {
+          pc.classList.add('locked');
+          if (!wasLocked) {
+            pc.classList.remove('just-locked');
+            // Force reflow so the animation restarts
+            void pc.offsetWidth;
+            pc.classList.add('just-locked');
+            setTimeout(() => pc.classList.remove('just-locked'), 600);
+          }
+        } else {
+          pc.classList.remove('locked');
+          pc.classList.remove('just-locked');
+        }
       });
     } else {
-      p.style.left = d.origX + 'px';
-      p.style.top  = d.origY + 'px';
+      p.style.left = Math.round(d.origX) + 'px';
+      p.style.top  = Math.round(d.origY) + 'px';
     }
   }
   checkWin();
