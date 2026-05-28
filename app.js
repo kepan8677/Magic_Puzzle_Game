@@ -95,8 +95,8 @@ const I18N = {
     win_info: '{n}×{n} · Difficulty {d}',
     history_row: '{score} pts · {n}×{n} · diff {d} · {time}',
     share_text: "Let's play puzzles!",
-    levels: '🏀 Levels',
-    levels_subtitle: '— Slam Dunk Campaign',
+    levels: '🎨 Levels',
+    levels_subtitle: '— Blue Bear Calendar 2026',
     level_completed: 'Completed',
     level_total_score: 'Total',
     reset_progress: 'Reset',
@@ -182,8 +182,8 @@ const I18N = {
     win_info: '{n}×{n} · 难度 {d}',
     history_row: '{score} 分 · {n}×{n} · 难度 {d} · {time}',
     share_text: '一起来玩拼图吧！',
-    levels: '🏀 关卡',
-    levels_subtitle: '— 灌篮高手系列',
+    levels: '🎨 关卡',
+    levels_subtitle: '— 大蓝熊 2026 日历',
     level_completed: '已完成',
     level_total_score: '总得分',
     reset_progress: '重置',
@@ -537,12 +537,47 @@ function renderLevels() {
     wrap.appendChild(card);
   });
 }
-function startLevel(idx) {
+// Load an image URL and return a square-cropped JPEG data URL (center crop, max 1600px).
+// Used by startLevel to handle non-square calendar images.
+function loadImageAsSquareURL(url) {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.crossOrigin = 'anonymous';
+    im.onload = () => {
+      try {
+        const side = Math.min(im.naturalWidth, im.naturalHeight);
+        const sx = Math.floor((im.naturalWidth - side) / 2);
+        const sy = Math.floor((im.naturalHeight - side) / 2);
+        const out = Math.min(side, 1600);
+        const c = document.createElement('canvas');
+        c.width = c.height = out;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(im, sx, sy, side, side, 0, 0, out, out);
+        resolve(c.toDataURL('image/jpeg', 0.92));
+      } catch (e) { reject(e); }
+    };
+    im.onerror = () => reject(new Error('Failed to load: ' + url));
+    im.src = url;
+  });
+}
+
+async function startLevel(idx) {
   const lvl = SLAM_DUNK_LEVELS[idx];
   if (!lvl) return;
-  state.gridN = 7;
+  $('startBtn').disabled = true;
+  // Load + center-crop the level image to a square
+  let imgURL;
+  try {
+    imgURL = await loadImageAsSquareURL(lvl.image);
+  } catch (e) {
+    console.error(e);
+    showToast(`Image missing: ${lvl.image}`);
+    return;
+  }
+  state.gridN = 6;
   state.diff = 5;
-  state.imgURL = lvl.image;
+  state.imgURL = imgURL;
   state.imgFile = null;
   state.activeLevelIdx = idx;
   $('previewImg').src = state.imgURL;
